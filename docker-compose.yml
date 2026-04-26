@@ -2,6 +2,6 @@ version: '3.8'
 
 services:
   app:
-    image: nginx:latest
+    build: .
     ports:
-      - "8080:80"
+      - "3000:3000"
