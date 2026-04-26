@@ -24,4 +24,4 @@ jobs:
         with:
           context: .
           push: true
-          tags: madalinaghica12/my-app:latest
+          tags: madalinaghica12/tags: madalinaghica12/cc_ghica_madalina_2026_apps:latest:latest
