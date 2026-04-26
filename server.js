@@ -5,6 +5,7 @@ const fs = require('fs');
 const app = express();
 const PORT = 3000;
 
+// ✅ API endpoint
 app.get('/api/data', (req, res) => {
     fs.readFile('data.json', 'utf8', (err, data) => {
         if (err) {
@@ -12,6 +13,11 @@ app.get('/api/data', (req, res) => {
         }
         res.json(JSON.parse(data));
     });
+});
+
+// ✅ Frontend (index.html)
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 app.listen(PORT, () => {
