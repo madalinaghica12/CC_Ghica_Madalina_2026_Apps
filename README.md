@@ -229,7 +229,7 @@ Backend code details: [`backend/README.md`](backend/README.md)
 }
 ```
 
-`GET /api/data` as `user` with `custom:device_id=E-001`:
+`GET /api/data` as `user1` with `custom:device_id=E-001`:
 
 ```json
 {

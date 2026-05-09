@@ -9,11 +9,12 @@ function App() {
   const [profile, setProfile] = useState(null);
   const [dataResponse, setDataResponse] = useState(null);
   const [loadingProfile, setLoadingProfile] = useState(false);
+  const [csvData, setCsvData] = useState([]);
+  const [loadingCsv, setLoadingCsv] = useState(false);
   const [loadingData, setLoadingData] = useState(false);
   const [error, setError] = useState(null);
   const [showToken, setShowToken] = useState(false);
   const [copied, setCopied] = useState(false);
-
   const idToken = auth.user?.id_token;
 
   // Call backend when we have an idToken
@@ -52,7 +53,29 @@ function App() {
       .catch((err) => setError(err.message))
       .finally(() => setLoadingData(false));
   }, [idToken]);
+  useEffect(() => {
+  setLoadingCsv(true);
 
+  fetch("/energy_usage_large.csv")
+    .then((res) => res.text())
+    .then((text) => {
+      const lines = text.split("\n").filter(l => l.trim() !== "");
+      const headers = lines[0].split(",");
+
+      const data = lines.slice(1).map((line) => {
+        const values = line.split(",");
+        const obj = {};
+        headers.forEach((h, i) => {
+          obj[h.trim()] = values[i]?.trim() || "";
+        });
+        return obj;
+      });
+
+      setCsvData(data);
+    })
+    .catch((err) => console.error(err))
+    .finally(() => setLoadingCsv(false));
+}, []);
   const signOutRedirect = () => {
     const clientId = OIDC_CONFIG.client_id;
     const logoutUri = LOGOUT_URI;
@@ -181,6 +204,31 @@ function App() {
               ) : (
                 <p className="muted">No data loaded yet.</p>
               )}
+              <h2>Data CSV</h2>
+{loadingCsv ? (
+  <p className="muted">Loading CSV...</p>
+) : csvData.length > 0 ? (
+  <table className="table">
+    <thead>
+      <tr>
+        {Object.keys(csvData[0]).map((key) => (
+          <th key={key}>{key}</th>
+        ))}
+      </tr>
+    </thead>
+    <tbody>
+      {csvData.map((row, index) => (
+        <tr key={index}>
+          {Object.values(row).map((value, i) => (
+            <td key={i}>{value}</td>
+          ))}
+        </tr>
+      ))}
+    </tbody>
+  </table>
+) : (
+  <p className="muted">No CSV loaded yet.</p>
+)}
             </section>
           </div>
         )}

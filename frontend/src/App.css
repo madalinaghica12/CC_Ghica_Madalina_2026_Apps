@@ -200,6 +200,23 @@ h2 {
   background: rgba(173, 209, 246, 0.55);
 }
 
+.table {
+  width: 100%;
+  border-collapse: collapse; 
+}
+
+.table th,
+.table td {
+  border: 1px solid #ccc; 
+  padding: 8px;
+  text-align: left;
+}
+
+.table th {
+  background-color: #f4f4f4;
+  font-weight: bold;
+}
+
 .btn-small {
   font-size: 0.82rem;
   padding: 6px 10px;
