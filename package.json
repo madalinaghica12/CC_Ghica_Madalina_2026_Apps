@@ -9,5 +9,10 @@
   },
   "devDependencies": {
     "prettier": "^3.6.2"
+  },
+  "dependencies": {
+    "@azure/identity": "^4.13.1",
+    "@azure/storage-blob": "^12.31.0",
+    "papaparse": "^5.5.3"
   }
 }

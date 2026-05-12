@@ -3,7 +3,7 @@ services:
     platform: linux/amd64
     build:
       context: ./backend
-    image: tucn-cc-backend-api-local
+    image: tucn-cc-backend
     env_file:
       - ./backend/.env
     ports:
@@ -21,7 +21,7 @@ services:
         REACT_APP_OIDC_REDIRECT_URI: ${REACT_APP_OIDC_REDIRECT_URI}
         REACT_APP_OIDC_SCOPE: ${REACT_APP_OIDC_SCOPE}
         REACT_APP_LOGOUT_URI: ${REACT_APP_LOGOUT_URI}
-    image: tucn-cc-frontend-local
+    image: tucn-cc-frontend
     depends_on:
       - backend
     ports:

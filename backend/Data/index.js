@@ -5,20 +5,47 @@ const {
   preflightResponse,
 } = require("../shared/auth");
 const { emit, finishRequest, maskDeviceId, startRequest } = require("../shared/logging");
+const { BlobServiceClient } = require("@azure/storage-blob");
+const { DefaultAzureCredential } = require("@azure/identity");
+const Papa = require("papaparse");
 
-const allData = [
-  { device_id: "E-001", value: 10 },
-  { device_id: "E-002", value: 20 },
-];
+async function loadEnergyData() {
+  try {
+    const accountName = process.env.STORAGE_ACCOUNT_NAME;
+    const containerName = process.env.DATASETS_CONTAINER_NAME;
+
+    const client = new BlobServiceClient(
+      https://${accountName}.blob.core.windows.net,
+      new DefaultAzureCredential()
+    );
+
+    const containerClient = client.getContainerClient(containerName);
+    const blobClient = containerClient.getBlobClient("energy_usage_large.csv"); // replace with your CSV filename
+
+    const downloadResponse = await blobClient.download();
+    const chunks = [];
+    for await (const chunk of downloadResponse.readableStreamBody) {
+      chunks.push(chunk);
+    }
+    const csvText = Buffer.concat(chunks).toString("utf-8");
+    const { data } = Papa.parse(csvText, { header: true, skipEmptyLines: true });
+    return data;
+  } catch (error) {
+    console.error("Error loading energy data from blob:", error);
+    return [];
+  }
+}
 
 module.exports = async function data(context, req) {
   const request = startRequest(context, req, "/api/data");
-
+  
   if (req.method === "OPTIONS") {
     context.res = preflightResponse(request.correlationId);
     finishRequest(context, request, 204);
     return;
   }
+
+  const allData = await loadEnergyData();
 
   try {
     const auth = await authenticate(req);
@@ -47,7 +74,8 @@ module.exports = async function data(context, req) {
         return;
       }
 
-      visibleData = allData.filter((item) => item.device_id === device_id);
+      const normalizedDeviceId = device_id.trim().toUpperCase();
+      visibleData = allData.filter((item) => item.device_id === normalizedDeviceId);
     } else {
       emit(context, "warn", "authz.denied", {
         correlationId: request.correlationId,
