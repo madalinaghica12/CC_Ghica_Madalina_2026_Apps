@@ -15,7 +15,7 @@ async function loadEnergyData() {
     const containerName = process.env.DATASETS_CONTAINER_NAME;
 
     const client = new BlobServiceClient(
-     "https://${accountName}.blob.core.windows.net",
+      'https://${accountName}.blob.core.windows.net',
       new DefaultAzureCredential()
     );
 
@@ -38,7 +38,7 @@ async function loadEnergyData() {
 
 module.exports = async function data(context, req) {
   const request = startRequest(context, req, "/api/data");
-  
+
   if (req.method === "OPTIONS") {
     context.res = preflightResponse(request.correlationId);
     finishRequest(context, request, 204);
