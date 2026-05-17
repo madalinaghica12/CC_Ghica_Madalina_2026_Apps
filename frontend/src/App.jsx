@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useAuth } from "react-oidc-context";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { API_BASE, COGNITO_DOMAIN, LOGOUT_URI, OIDC_CONFIG } from "./config";
 import "./App.css";
 
@@ -17,7 +18,6 @@ function App() {
   const [copied, setCopied] = useState(false);
   const idToken = auth.user?.id_token;
 
-  // Call backend when we have an idToken
   useEffect(() => {
     if (!idToken) {
       setProfile(null);
@@ -27,7 +27,6 @@ function App() {
 
     setError(null);
 
-    // /api/profile
     setLoadingProfile(true);
     fetch(`${API_BASE}/api/profile`, {
       headers: { Authorization: `Bearer ${idToken}` },
@@ -40,7 +39,6 @@ function App() {
       .catch((err) => setError(err.message))
       .finally(() => setLoadingProfile(false));
 
-    // /api/data
     setLoadingData(true);
     fetch(`${API_BASE}/api/data`, {
       headers: { Authorization: `Bearer ${idToken}` },
@@ -53,6 +51,7 @@ function App() {
       .catch((err) => setError(err.message))
       .finally(() => setLoadingData(false));
   }, [idToken]);
+
   useEffect(() => {
     setLoadingCsv(true);
 
@@ -76,15 +75,12 @@ function App() {
       .catch((err) => console.error(err))
       .finally(() => setLoadingCsv(false));
   }, []);
+
   const signOutRedirect = () => {
     const clientId = OIDC_CONFIG.client_id;
     const logoutUri = LOGOUT_URI;
     const cognitoDomain = COGNITO_DOMAIN;
-
-    // Clear local OIDC user (react-oidc-context)
     auth.removeUser();
-
-    // Redirect to Cognito logout endpoint
     window.location.href =
       `${cognitoDomain}/logout?client_id=${clientId}` +
       `&logout_uri=${encodeURIComponent(logoutUri)}`;
@@ -100,6 +96,12 @@ function App() {
       setError("Unable to copy token to clipboard.");
     }
   };
+
+  // Pregatim datele pentru grafic - primele 50 de puncte
+  const chartData = csvData.slice(0, 50).map((row) => ({
+    time: row.timestamp ? row.timestamp.substring(0, 16) : "",
+    kwh: parseFloat(row.kwh) || 0,
+  }));
 
   if (auth.isLoading) {
     return (
@@ -204,6 +206,24 @@ function App() {
               ) : (
                 <p className="muted">No data loaded yet.</p>
               )}
+
+              <h2>Energy Usage Chart (kWh)</h2>
+              {loadingCsv ? (
+                <p className="muted">Loading chart...</p>
+              ) : chartData.length > 0 ? (
+                <ResponsiveContainer width="100%" height={300}>
+                  <LineChart data={chartData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="time" tick={{ fontSize: 10 }} interval={9} />
+                    <YAxis />
+                    <Tooltip />
+                    <Line type="monotone" dataKey="kwh" stroke="#6366f1" dot={false} />
+                  </LineChart>
+                </ResponsiveContainer>
+              ) : (
+                <p className="muted">No data for chart.</p>
+              )}
+
               <h2>Data CSV</h2>
               {loadingCsv ? (
                 <p className="muted">Loading CSV...</p>
