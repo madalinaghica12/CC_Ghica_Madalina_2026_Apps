@@ -15,7 +15,7 @@ async function loadEnergyData() {
     const containerName = process.env.DATASETS_CONTAINER_NAME;
 
     const client = new BlobServiceClient(
-      "https://${accountName}.blob.core.windows.net",
+      'https://${accountName}.blob.core.windows.net',
       new DefaultAzureCredential()
     );
 
